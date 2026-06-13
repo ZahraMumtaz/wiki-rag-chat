@@ -1,0 +1,33 @@
+{
+  "name": "wiki-rag-chat",
+  "version": "1.0.0",
+  "description": "Wikipedia RAG chatbot with Express, Ollama, and Qdrant",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js"
+  },
+  "keywords": [
+    "wikipedia",
+    "rag",
+    "chatbot",
+    "ollama",
+    "qdrant"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "@qdrant/js-client-rest": "^1.13.0",
+    "axios": "^1.7.9",
+    "cheerio": "^1.0.0-rc.12",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2"
+  },
+  "devDependencies": {
+    "@jest/globals": "^29.7.0",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
+  }
+}
