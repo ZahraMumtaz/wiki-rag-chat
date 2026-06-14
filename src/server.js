@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { getArticle } from './wikipedia.js';
+import { splitIntoChunks } from './chunks.js';
 
 dotenv.config();
 
@@ -10,35 +14,54 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-/**
- * Health check endpoint.
- */
-app.get('/health', (_req, res) => {
-  // TODO: return server status
+app.get('/api/health', (_req, res) => {
+  res.json({ status: 'ok' });
 });
 
-/**
- * Ingest a Wikipedia article: scrape, chunk, embed, and store in Qdrant.
- */
-app.post('/ingest', async (_req, res) => {
-  // TODO: accept article URL/title, run ingestion pipeline
-});
+app.post('/api/ingest', async (req, res) => {
+  const { url } = req.body;
 
-/**
- * Chat with the RAG system using stored Wikipedia context.
- */
-app.post('/chat', async (_req, res) => {
-  // TODO: accept user message, retrieve relevant chunks, generate reply
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'Request body must include a url string' });
+  }
+
+  try {
+    const article = await getArticle(url);
+    const chunks = splitIntoChunks(article.text, article.title);
+    return res.json({
+      title: article.title,
+      url: article.url,
+      totalChunks: chunks.length,
+      chunks,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to ingest article';
+
+    if (
+      message.includes('wikipedia.org') ||
+      message.includes('Invalid URL') ||
+      message.includes('too short')
+    ) {
+      return res.status(400).json({ error: message });
+    }
+
+    console.error('[server] Ingest error:', error);
+    return res.status(500).json({ error: 'Failed to fetch Wikipedia article' });
+  }
 });
 
 /**
  * Start the Express server.
  */
 export function startServer() {
-  // TODO: listen on PORT
+  app.listen(PORT, () => {
+    console.log(`[server] Listening on port ${PORT}`);
+  });
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
+const __filename = fileURLToPath(import.meta.url);
+
+if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   startServer();
 }
 
