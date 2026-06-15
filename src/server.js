@@ -11,8 +11,6 @@ import { summarize, chat } from "./ai.js";
 
 dotenv.config();
 
-initDatabase();
-
 const app = express();
 const PORT = process.env.PORT || 3000;
 

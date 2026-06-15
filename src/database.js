@@ -7,29 +7,27 @@ const COLLECTION_NAME = "wiki_chunks";
 const VECTOR_SIZE = 768;
 const DISTANCE_TYPE = "Cosine";
 
-let qdrantClient;
+const qdrantClient = new QdrantClient({ url: QDRANT_URL });
 
 /**
  * Initialize Qdrant client and ensure the collection exists.
  * @returns {Promise<void>}
  */
 export async function initDatabase() {
-  qdrantClient = new QdrantClient({ url: QDRANT_URL });
+  const { collections } = await qdrantClient.getCollections();
 
-  // const { collections } = await qdrantClient.getCollections();
+  if (collections.some((c) => c.name === COLLECTION_NAME)) {
+    console.log(`[database] Deleting existing collection '${COLLECTION_NAME}'`);
+    await qdrantClient.deleteCollection(COLLECTION_NAME);
+  }
 
-  // if (collections.some((c) => c.name === COLLECTION_NAME)) {
-  //   console.log(`[database] Deleting existing collection '${COLLECTION_NAME}'`);
-  //   await qdrantClient.deleteCollection(COLLECTION_NAME);
-  // }
-
-  // console.log(`[database] Creating collection '${COLLECTION_NAME}'`);
-  // await qdrantClient.createCollection(COLLECTION_NAME, {
-  //   vectors: { size: VECTOR_SIZE, distance: DISTANCE_TYPE },
-  // });
-  // console.log(
-  //   `[database] collection '${COLLECTION_NAME}' created successfully...`,
-  // );
+  console.log(`[database] Creating collection '${COLLECTION_NAME}'`);
+  await qdrantClient.createCollection(COLLECTION_NAME, {
+    vectors: { size: VECTOR_SIZE, distance: DISTANCE_TYPE },
+  });
+  console.log(
+    `[database] collection '${COLLECTION_NAME}' created successfully...`,
+  );
 }
 
 /**
