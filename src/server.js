@@ -94,6 +94,15 @@ export function startServer() {
 }
 
 const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Serve React build
+app.use(express.static(path.join(__dirname, "../client/dist")));
+
+// Catch-all route for React
+app.get("*", (req, res) => {
+  res.sendFile(path.join(__dirname, "../client/dist/index.html"));
+});
 
 if (process.argv[1] && path.resolve(process.argv[1]) === __filename) {
   startServer();
